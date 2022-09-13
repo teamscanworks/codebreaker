@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/teamscanworks/cw-contracts-resolver/types"
+	"github.com/teamscanworks/codebreaker/types"
 )
 
 // Handler is the core object in the server package. It keeps an in-memory state

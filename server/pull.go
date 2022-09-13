@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/teamscanworks/cw-contracts-resolver/types"
+	"github.com/teamscanworks/codebreaker/types"
 )
 
 // Pull requests all registry information from a github repo and updates the

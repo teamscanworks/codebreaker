@@ -1,4 +1,4 @@
-module github.com/teamscanworks/cw-contracts-resolver
+module github.com/teamscanworks/codebreaker
 
 go 1.17
 

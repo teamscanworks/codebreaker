@@ -9,7 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/teamscanworks/cw-contracts-resolver/server"
+	"github.com/teamscanworks/codebreaker/server"
 )
 
 const (
