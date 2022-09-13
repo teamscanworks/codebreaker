@@ -29,7 +29,7 @@ type ContractsItem struct {
   ReleaseTag string `json:"release_tag"`
   Repository string `json:"repository"`
   SecurityContact string `json:"security_contact,omitempty"`
-  Website string `json:"website,omitempty"`
+  Verified bool `json:"verified"`
 }
 
 // ContractsRegistry Contracts json is a metadata file that contains information about CosmWasm contract code in Cosmos chains.
@@ -41,8 +41,6 @@ type ContractsRegistry struct {
   Contracts map[string]*ContractsItem `json:"contracts,omitempty"`
   NetworkType interface{} `json:"network_type,omitempty"`
   PrettyName string `json:"pretty_name,omitempty"`
-  Status interface{} `json:"status,omitempty"`
-  Website string `json:"website,omitempty"`
 }
 
 func (strct *ContractsItem) MarshalJSON() ([]byte, error) {
@@ -162,12 +160,14 @@ func (strct *ContractsItem) MarshalJSON() ([]byte, error) {
  		buf.Write(tmp)
 	}
 	comma = true
-    // Marshal the "website" field
+    // "Verified" field is required
+    // only required object types supported for marshal checking (for now)
+    // Marshal the "verified" field
     if comma { 
         buf.WriteString(",") 
     }
-    buf.WriteString("\"website\": ")
-	if tmp, err := json.Marshal(strct.Website); err != nil {
+    buf.WriteString("\"verified\": ")
+	if tmp, err := json.Marshal(strct.Verified); err != nil {
 		return nil, err
  	} else {
  		buf.Write(tmp)
@@ -187,6 +187,7 @@ func (strct *ContractsItem) UnmarshalJSON(b []byte) error {
     module_nameReceived := false
     release_tagReceived := false
     repositoryReceived := false
+    verifiedReceived := false
     var jsonMap map[string]json.RawMessage
     if err := json.Unmarshal(b, &jsonMap); err != nil {
         return err
@@ -237,10 +238,11 @@ func (strct *ContractsItem) UnmarshalJSON(b []byte) error {
             if err := json.Unmarshal([]byte(v), &strct.SecurityContact); err != nil {
                 return err
              }
-        case "website":
-            if err := json.Unmarshal([]byte(v), &strct.Website); err != nil {
+        case "verified":
+            if err := json.Unmarshal([]byte(v), &strct.Verified); err != nil {
                 return err
              }
+            verifiedReceived = true
         }
     }
     // check if build_env (a required property) was received
@@ -270,6 +272,10 @@ func (strct *ContractsItem) UnmarshalJSON(b []byte) error {
     // check if repository (a required property) was received
     if !repositoryReceived {
         return errors.New("\"repository\" is required but was not present")
+    }
+    // check if verified (a required property) was received
+    if !verifiedReceived {
+        return errors.New("\"verified\" is required but was not present")
     }
     return nil
 }
@@ -361,28 +367,6 @@ func (strct *ContractsRegistry) MarshalJSON() ([]byte, error) {
  		buf.Write(tmp)
 	}
 	comma = true
-    // Marshal the "status" field
-    if comma { 
-        buf.WriteString(",") 
-    }
-    buf.WriteString("\"status\": ")
-	if tmp, err := json.Marshal(strct.Status); err != nil {
-		return nil, err
- 	} else {
- 		buf.Write(tmp)
-	}
-	comma = true
-    // Marshal the "website" field
-    if comma { 
-        buf.WriteString(",") 
-    }
-    buf.WriteString("\"website\": ")
-	if tmp, err := json.Marshal(strct.Website); err != nil {
-		return nil, err
- 	} else {
- 		buf.Write(tmp)
-	}
-	comma = true
 
 	buf.WriteString("}")
 	rv := buf.Bytes()
@@ -429,14 +413,6 @@ func (strct *ContractsRegistry) UnmarshalJSON(b []byte) error {
              }
         case "pretty_name":
             if err := json.Unmarshal([]byte(v), &strct.PrettyName); err != nil {
-                return err
-             }
-        case "status":
-            if err := json.Unmarshal([]byte(v), &strct.Status); err != nil {
-                return err
-             }
-        case "website":
-            if err := json.Unmarshal([]byte(v), &strct.Website); err != nil {
                 return err
              }
         }
