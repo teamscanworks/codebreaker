@@ -23,8 +23,8 @@ codebreaker teamscanworks/cw-contract-registry <rpc-endpoint> :8080
 | Query                                    | Description                                   | Response Type |
 |------------------------------------------|-----------------------------------------------|---------------|
 | `/v1/chains`                             | Returns an array of registered chains by name | `[]string`    |
-| `/v1/chain/{chain}/contracts/{codeId}`   | Returns the contract info by code id          | `Contract`    |
-| `/v1/chain/{chain}/contracts/{addreess}` | Returns the contract info by address (TODO)   | `Contract`    |
+| `/v1/chain/{chain}/code-id/{codeId}`     | Returns the contract info by code id          | `Contract`    |
+| `/v1/chain/{chain}/address/{addreess}`   | Returns the contract info by address (TODO)   | `Contract`    |
 
 ## Acknowledgements
 
