@@ -14,7 +14,7 @@ go install github.com/teamscanworks/codebreaker@latest
 and run the server (this is for port :8080)
 
 ```cli
-codebreaker teamscanworks/cw-contract-registry <rpc-endpoint> :8080
+codebreaker teamscanworks/cw-contracts-registry :8080
 ```
 
 ## API Reference
