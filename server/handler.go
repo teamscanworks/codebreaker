@@ -18,7 +18,7 @@ type Handler struct {
 	//rpcEndpoints string // todo: initialize wasm module rpc endpoints for each supported chain
 	lastUpdated time.Time
 	chains      []string
-	chainList   map[string]types.Chain
+	chainList   map[string]types.ContractsRegistry
 	log         *log.Logger
 }
 
@@ -27,7 +27,7 @@ func NewHandler(registryUrl string, log *log.Logger) *Handler {
 		registryUrl: registryUrl,
 		lastUpdated: time.Unix(0, 0),
 		chains:      make([]string, 0),
-		chainList:   make(map[string]types.Chain),
+		chainList:   make(map[string]types.ContractsRegistry),
 		log:         log,
 	}
 }
@@ -49,13 +49,13 @@ func (h Handler) ContractByCodeId(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	chain, ok := h.chainList[chainName]
+	contractRegistry, ok := h.chainList[chainName]
 	if !ok {
 		resourceNotFound(res)
 		return
 	}
 
-	contractInfo, exists := chain.Codes[codeId]
+	contractInfo, exists := contractRegistry.Contracts[codeId]
 
 	if !exists {
 		resourceNotFound(res) // todo: improve error handling, explicit "code does not exist"...

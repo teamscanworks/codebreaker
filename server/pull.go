@@ -116,13 +116,13 @@ func (h *Handler) getChainContracts(name string) error {
 		return err
 	}
 
-	var chain types.Chain
-	err = json.Unmarshal(bodyBytes, &chain)
+	var contractRegistry types.ContractsRegistry
+	err = json.Unmarshal(bodyBytes, &contractRegistry)
 	if err != nil {
 		return err
 	}
 
-	h.chainList[name] = chain //todo: don't think I need this
+	h.chainList[name] = contractRegistry
 	return nil
 }
 
