@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -33,36 +34,36 @@ func NewHandler(registryUrl string, log *log.Logger) *Handler {
 }
 
 func (h Handler) Chains(res http.ResponseWriter, req *http.Request) {
-	respondWithJSON(res, h.chains)
+	respondWithJSON(res, http.StatusOK, h.chains)
 }
 
 func (h Handler) ContractByCodeId(res http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	chainName, ok := vars["chain"]
 	if !ok {
-		badRequest(res)
+		respondWithError(res, http.StatusBadRequest, "Invalid request payload. No valid chain provided.")
 		return
 	}
 	codeId, ok := vars["codeId"]
 	if !ok {
-		badRequest(res)
+		respondWithError(res, http.StatusBadRequest, "Invalid request payload. No valid code id provided.")
 		return
 	}
 
 	contractRegistry, ok := h.chainList[chainName]
 	if !ok {
-		resourceNotFound(res)
+		respondWithError(res, http.StatusNotFound, fmt.Sprintf("Chain information for %s could not be found.", chainName))
 		return
 	}
 
 	contractInfo, exists := contractRegistry.Contracts[codeId]
 
 	if !exists {
-		resourceNotFound(res) // todo: improve error handling, explicit "code does not exist"...
+		respondWithError(res, http.StatusNotFound, fmt.Sprintf("Contract information for code-id %s on %s could not be found.", codeId, chainName))
 		return
 	}
 
-	respondWithJSON(res, contractInfo)
+	respondWithJSON(res, http.StatusOK, contractInfo)
 }
 
 /*
@@ -88,13 +89,13 @@ func (h Handler) ContractByAddress(res http.ResponseWriter, req *http.Request) {
 	codeId, err := getCodeIdfromAddress(address)
 
 	if err != nil {
-		// todo: improve error handling, rpc unavailable
+		// todo: error handling, rpc unavailable
 	}
 
 	contractInfo, exists := chain.Codes[codeId]
 
 	if !exists {
-		resourceNotFound(res) // todo: improve error handling, explicit "code does not exist"...
+		resourceNotFound(res) // todo: error handling, explicit "code does not exist"...
 		return
 	}
 
@@ -102,14 +103,14 @@ func (h Handler) ContractByAddress(res http.ResponseWriter, req *http.Request) {
 }
 */
 
-func respondWithJSON(w http.ResponseWriter, payload interface{}) {
+func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	response, _ := json.Marshal(payload)
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "GET")
 	w.Header().Set("Access-Control-Allow-Headers", "Origin, Accept, Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(code)
 	_, _ = w.Write(response)
 }
 
@@ -118,6 +119,10 @@ func resourceNotFound(w http.ResponseWriter) {
 	w.Header().Set("Access-Control-Allow-Methods", "GET")
 	w.Header().Set("Access-Control-Allow-Headers", "Origin, Accept, Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
 	w.WriteHeader(http.StatusNotFound)
+}
+
+func respondWithError(w http.ResponseWriter, code int, message string) {
+	respondWithJSON(w, code, map[string]string{"error": message})
 }
 
 func badRequest(w http.ResponseWriter) {
