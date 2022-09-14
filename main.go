@@ -4,7 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/url"
+	"github.com/joho/godotenv"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -17,9 +18,19 @@ const (
 )
 
 func main() {
-	registryUrl, listenAddr, err := parseArgs()
+	listenAddr, err := parseArgs()
 	if err != nil {
-		fmt.Print(err)
+		log.Fatal(err)
+	}
+
+	err = godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	registryUrl := os.Getenv("REGISTRY_URL")
+
+	if registryUrl == "" {
+		log.Fatal(errors.New("Error loading REGISTRY_URL env variable \n"))
 	}
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
@@ -31,19 +42,13 @@ func main() {
 	}
 }
 
-func parseArgs() (string, string, error) {
-	if len(os.Args) > 3 || len(os.Args) == 1 {
-		return "", "", errors.New("expected 1 or 2 arguments. \n\nUsage: cw-contracts-resolver registry-url [listen-addr]")
+func parseArgs() (string, error) {
+	switch len(os.Args) {
+	case 2:
+		return os.Args[1], nil
+	case 1:
+		return ":8080", nil
+	default:
+		return "", errors.New("expected 0 or 1 argument. \n\nUsage: codebreaker [listen-addr]")
 	}
-	registryUrl := os.Args[1]
-	_, err := url.Parse(registryUrl)
-	if err != nil {
-		return "", "", fmt.Errorf("unable to parse registry url: %w. \n\nUsage: cw-contracts-resolver registry-url rpc-endpoint [listen-addr]", err)
-	}
-
-	if len(os.Args) == 2 {
-		return registryUrl, "", nil
-	}
-
-	return registryUrl, os.Args[2], nil
 }
