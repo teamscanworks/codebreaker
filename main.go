@@ -25,7 +25,7 @@ func main() {
 
 	err = godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		fmt.Print("Error loading .env file")
 	}
 	registryUrl := os.Getenv("REGISTRY_URL")
 
